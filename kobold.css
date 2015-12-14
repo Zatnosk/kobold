@@ -1,0 +1,113 @@
+div {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+body {
+	margin: 0px;
+	display: flex;
+}
+#content {
+	display: flex;
+	flex-direction: column;
+}
+#scene {
+	background: #ffc;
+	padding: 10px;
+	position: relative;
+}
+#scene .map:not(:first-child) {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+#scene .map {
+	margin: 0px;
+	padding: 0px;
+	font-size: 1rem;
+	line-height: 1em;
+	letter-spacing: 0.5em;
+}
+#scene .map .water {
+	color: blue;
+}
+#scene .map .grass {
+	color: #060;
+}
+#scene .map .hill {
+	color: #c60;
+}
+#choices {
+	height: 110px;
+	padding: 0px 10px;
+	background-color: #464;
+	text-align: center;
+}
+#choices a {
+	float: left;
+	display: block;
+	height: 20px;
+	width: 410px;
+	padding: 5px;
+	margin-top: 5px;
+	background-color: #ffffcc;
+}
+#choices a.disabled {
+	text-decoration: line-through;
+}
+#choices a:nth-last-child(n+4) ~ a:nth-child(2n){
+	margin-left: 10px;
+}
+#choices a:nth-last-child(n+4),
+#choices a:nth-last-child(n+4) ~ a{
+	width: 200px;
+}
+#choices a:hover:not(.disabled){
+	background-color: white;
+}
+#inventory, #options {
+	display: flex;
+	flex-grow: 1;
+	padding: 30px;
+	background-color: #d8d0c0;
+	width: 300px;
+}
+#options {
+	flex-direction: column;
+}
+#options button {
+	height: 40px;
+}
+#options button:not(:first-child){
+	margin-top: 20px;
+}
+#inventory {
+	justify-content: center;
+}
+#inventory ul {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+	min-width: 200px;
+	text-align: center;
+}
+#inventory ul li {
+	text-align: left;
+}
+#overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.3);
+}
+.hidden {
+	display: none;
+}
+#overlayContent {
+	margin: 50px auto 0 auto;
+	padding: 20px;
+	width: 400px;
+	text-align: center;
+	background: white;
+}

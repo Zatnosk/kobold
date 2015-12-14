@@ -1,0 +1,153 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Kobold Engine</title>
+	<link rel="stylesheet" href="kobold.css">
+	<script src="screen.js"></script>
+	<script src="gfx.js"></script>
+	<script src="engine.js"></script>
+	<script id="shader-vs" type="x-shader/x-vertex">
+	uniform vec2 u_resolution;
+	attribute vec2 a_position;
+	attribute vec2 a_texCoord;
+	varying mediump vec2 v_texCoord;
+
+	void main() {
+		vec2 pos = vec2((a_position.x / u_resolution.x) * 2.0 - 1.0, 
+		                (a_position.y / u_resolution.y) * -2.0 + 1.0);
+		gl_Position = vec4(pos, 0, 1);
+		v_texCoord = a_texCoord;
+	}
+	</script>
+	<script id="shader-fs" type="x-shader/x-fragment">
+	uniform sampler2D u_image;
+	varying mediump vec2 v_texCoord;
+
+	void main() {
+		gl_FragColor = texture2D(u_image, v_texCoord);
+	}
+	</script>
+	<script type="text/javascript">
+	
+	function distance(ax, ay, bx, by, kx, ky){
+		kx = kx || 1
+		ky = ky || 1
+		var x = Math.abs(ax-bx)/kx
+		var y = Math.abs(ay-by)/ky
+		return Math.sqrt(Math.pow(x,2)+Math.pow(y,2))
+	}
+	var area1 = function(){
+		map = new Map(25,25)
+		map.terrain = new Array(map.width)
+		for(var x = 0; x < map.width; x++){
+			map.terrain[x] = new Array(map.height)
+			for(var y = 0; y < map.height; y++){
+				if(y < 6 && x == 12){
+					map.terrain[x][y] = {type: 'hill', variant: 'west'}
+				} else if(y == 6 && x > 12){
+					map.terrain[x][y] = {type: 'hill', variant: 'south'}
+				} else if(y == 6 && x == 12){
+					map.terrain[x][y] = {type: 'hill', variant: 'south-west'}
+				} else if(distance(x,y, 10,23) < 10.1 || distance(x,y, 9,5) > 8 && x < 10 && y > 5 || x < 2){
+					map.terrain[x][y] = {type: 'water', variant: undefined}
+				} else if(distance(x,y, 18,15) > 5 && x > 15 && y > 15 || x > 22 && y > 6){
+					map.terrain[x][y] = {type: 'tree', variant: undefined}
+				} else {
+					map.terrain[x][y] = {type: 'grass', variant: undefined}
+				}
+			}
+		}
+		map.createNPC(10,10)
+		return map
+	}()
+
+	var area2 = function(){
+		map = new Map(25,25)
+		map.terrain = new Array(map.width)
+		for(var x = 0; x < map.width; x++){
+			map.terrain[x] = new Array(map.height)
+			for(var y = 0; y < map.height; y++){
+				if(y > 18 && x == 12){
+					map.terrain[x][y] = {type: 'hill', variant: 'west'}
+				} else if(distance(x,y, 10, 10) > 7.5 && y < 10 || x < 2 || y < 2){
+					map.terrain[x][y] = {type: 'water', variant: undefined}
+				} else if(distance(x,y, 13,14) < 5 || distance(x,y, 18, 25) > 6.5 && x > 18 && y > 15 ||  x > 13 && y > 8 && y < 15){
+					map.terrain[x][y] = {type: 'tree', variant: undefined}
+				} else {
+					map.terrain[x][y] = {type: 'grass', variant: undefined}
+				}
+			}
+		}
+		map.createNPC(20,15)
+		return map
+	}()
+
+	area1.north = area2
+	area2.south = area1
+
+	function getInventory(context){
+		context.inventory = context.inventory || new Inventory()
+		return context.inventory
+	}
+
+	function Game(data){
+		this.screen = gfx(
+			[],
+			'texture2.png',
+			document.getElementById('scene')
+		)
+		var pc = this.playerCharacter = new Character(data.pcX, data.pcY)
+		var w = this.world = new World(data.map, pc, this.screen)
+		this.screen.addObject(pc.getScreenObject())
+
+		
+		this.controller = new Controller(window, {
+			'up': function(){pc.up()},
+			'down': function(){pc.down()},
+			'left': function(){pc.left()},
+			'right': function(){pc.right()},
+			'rest': function(){pc.rest()}
+		})
+		w.setController(this.controller)
+	}
+	</script>
+	<script src="charactersheet.js"></script>
+</head>
+<body>
+<aside>
+<div id="charactersheet"></div>
+<div id="inventory"></div>
+</aside>
+<div id="content">
+	<canvas id="scene" width="500px" height="500px"></canvas>
+	<div id="overlay" class="hidden"><div id="overlayContent"></div></div>
+</div>
+<div id="options">
+	Controls:<br>
+	<button id="wasd">WASD FG <input id="wc" type="checkbox" disabled></button><br>
+	<button id="arrows">Arrows ZX <input id="ac" type="checkbox" disabled checked></button><br>
+</div>
+<script>
+	var g = new Game({
+		pcX: 5,
+		pcY: 5,
+		map: area1
+	})
+	document.getElementById('inventory').appendChild(g.playerCharacter.getInventory().getDOM().root)
+	var controller = g.controller
+	document.getElementById('wasd').onclick = function(){
+		controller.keyMap = Controller.wasd
+		document.getElementById('wc').setAttribute('checked','')
+		document.getElementById('ac').removeAttribute('checked')
+	}
+	document.getElementById('arrows').onclick = function(){
+		controller.keyMap = Controller.arrows
+		document.getElementById('ac').setAttribute('checked','')
+		document.getElementById('wc').removeAttribute('checked')
+	}
+	var sheet = new CharacterSheet(100, 500)
+	document.getElementById('charactersheet').appendChild(sheet.elem)
+	g.playerCharacter.setSheet(sheet)
+</script>
+</body>
+</html>
