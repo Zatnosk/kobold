@@ -3,6 +3,8 @@
 	<meta charset="utf-8">
 	<title>Kobold Engine</title>
 	<link rel="stylesheet" href="kobold.css">
+	<script src="charactersheet.js"></script>
+	<script src="conversation.js"></script>
 	<script src="screen.js"></script>
 	<script src="gfx.js"></script>
 	<script src="engine.js"></script>
@@ -57,7 +59,12 @@
 				}
 			}
 		}
-		map.createNPC(10,10)
+		var npc1 = map.createNPC(10,10)
+		npc1.conversation.addLine('greeting', 'Greetings traveller!');
+		npc1.conversation.setOpeningLine('greeting');
+		npc1.conversation.setChoice('greeting', 'yes', 'takethis', 'Hello. Who are you?')
+		npc1.conversation.addLine('takethis', 'Who I am is not important. But it is dangerous to go alone! Take this.')
+		npc1.conversation.setChoice('takethis', 'yes', false, 'Ehm.. ok?')
 		return map
 	}()
 
@@ -78,12 +85,13 @@
 				}
 			}
 		}
-		map.createNPC(20,15)
+		var npc2 = map.createNPC(20,15)
 		return map
 	}()
 
 	area1.north = area2
 	area2.south = area1
+	
 
 	function getInventory(context){
 		context.inventory = context.inventory || new Inventory()
@@ -111,7 +119,6 @@
 		w.setController(this.controller)
 	}
 	</script>
-	<script src="charactersheet.js"></script>
 </head>
 <body>
 <aside>

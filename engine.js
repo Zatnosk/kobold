@@ -7,15 +7,42 @@ function World(map, PC, screen){
 	this.screen.addObject(this.screenObject)
 	this.setMap(map)
 }
-World.prototype.text = function(conversationSource, endFunc){
+
+World.prototype.text = function(conversation, callback){
+	function fillOverlay(id){
+		overlay.textContent = conversation.get(id)
+		var choices = conversation.getChoices(id)
+		for(var key in choices){
+			var keybind = controller.keyMap[key] || ' '
+			overlay.innerHTML += '<br>['+keybind+']: '+choices[key].text
+		}
+	}
+	function next(resolve, id){
+		fillOverlay(id)
+		if(id === false){
+			end(resolve)
+		} else {
+			var choices = conversation.getChoices(id)
+			var actions = {}
+			for(var key in choices){
+				if(typeof choices[key].id != undefined){
+					actions[key] = function(){pop(); next(resolve, choices[key].id)}
+				}
+			}
+			var pop = controller.shadowActions(actions)
+		}
+	}
+	function end(resolve){
+		resolve(callback())
+		document.getElementById('overlay').classList.add('hidden')
+	}
+	var controller = this.controller
+	var overlay = document.getElementById('overlayContent')
 	document.getElementById('overlay').classList.remove('hidden')
-	new Conversation(
-			conversationSource,
-			document.getElementById('overlayContent'),
-			function(){
-				document.getElementById('overlay').classList.add('hidden')
-				endFunc()
-			})
+	var promise = new Promise(function(resolve, reject){
+		next(resolve, undefined)
+	})
+	return promise
 }
 
 World.prototype.prompt = function(query, callback){
@@ -23,9 +50,8 @@ World.prototype.prompt = function(query, callback){
 	var prompt = document.getElementById('overlayContent')
 	prompt.innerHTML = query + '<br>Yes: ['+controller.keyMap.yes+'] | No: ['+controller.keyMap.no+']'
 	document.getElementById('overlay').classList.remove('hidden')
-
 	var end = function(result, resolve){
-		resolve(callback(result));
+		resolve(callback(result))
 		document.getElementById('overlay').classList.add('hidden')
 	}
 	var promise = new Promise(function(resolve, reject){
@@ -67,18 +93,22 @@ function Map(width, height){
 	this.npcs = []
 }
 Map.prototype.getReaction = function(event){
+	function wait(promise){
+		if(typeof promise != 'undefined'){
+			return {'x': event.x, 'y': event.y, delayed: promise}
+		} else {
+			return {'x': event.x, 'y': event.y}
+		}
+	}
 	var x = event.x + event.dx
 	var y = event.y + event.dy
 	var npc = this.getNPC(x,y)
 	if(npc){
-		var promise = this.world.prompt("Talk to "+npc.name+"?", function(success){
-			if(success){
-				return {x: event.x, y: event.y}
-			} else {
-				return  {x: event.x, y: event.y}
-			}
+		var world = this.world
+		var promise = world.text(npc.conversation, function(){
+			return wait()
 		})
-		return {x: event.x, y: event.y, delayed: promise}
+		return wait(promise)
 	}
 	var tile = this.getTerrain(x, y)
 	if(event.type == 'climb'){
@@ -87,7 +117,7 @@ Map.prototype.getReaction = function(event){
 				if(success){
 					return {x: x, y: y, 'stamina': -10}
 				} else {
-					return {x: event.x, y: event.y}
+					return nop()
 				}
 			})
 			return {x: event.x, y: event.y, delayed: promise}
@@ -145,11 +175,12 @@ Map.prototype.getTerrain = function(x,y){
 	}
 }
 Map.prototype.createNPC = function(x, y){
-	var npc = new Character(x,y, 4, 1)
+	var npc = new NonPlayerCharacter(x,y, 4, 1)
 	this.npcs.push(npc)
 	this.npcmap = this.npcmap || []
 	this.npcmap[x] = this.npcmap[x] || []
 	this.npcmap[x][y] = npc
+	return npc
 }
 Map.prototype.getNPCs = function(){
 	return this.npcs
@@ -230,6 +261,14 @@ Character.prototype.getInventory = function(size){
 Character.prototype.setSheet = function(sheet){
 	this.stats = sheet
 }
+
+function NonPlayerCharacter(x, y, sx, sy){
+	Character.call(this, x, y, sx, sy)
+	this.conversation = new Conversation();
+}
+
+NonPlayerCharacter.prototype = Object.create(Character.prototype)
+NonPlayerCharacter.prototype.constructor = NonPlayerCharacter
 
 function Controller(target, actions, keyMap){
 	this.target = target
