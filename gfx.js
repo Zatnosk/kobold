@@ -33,7 +33,7 @@
 			if(variant == 'west'){
 				x = 0
 				y = 3
-			} else if(variant == 'south-west'){
+			} else if(variant == 'southwest'){
 				x = 1
 				y = 3
 			} else if(variant == 'south'){
@@ -49,6 +49,43 @@
 		} else if(type == 'char'){
 			x = 0
 			y = 3
+		} else if(type == 'hut'){
+			console.log(variant)
+			switch(variant){
+				case 'northwest':
+					x = 3; y = 3; break
+				case 'west':
+					x = 3; y = 4; break
+				case 'southwest':
+					x = 3; y = 5; break
+				case 'north':
+					x = 4; y = 3; break
+				case 'south':
+					x = 4; y = 5; break
+				case 'northeast':
+					x = 5; y = 3; break
+				case 'east':
+					x = 5; y = 4; break
+				case 'southeast':
+					x = 5; y = 5; break
+				case 'chimney':
+					x = 2; y = 5; break
+				case 'window-light':
+					x = 1; y = 5; break
+				case 'window-dark':
+					x = 0; y = 5; break
+				default:
+					x = 4; y = 4; break
+			}
+		} else if(type == 'hutdoor'){
+			switch(variant){
+				case 'closed':
+					x = 2; y = 4; break;
+				case 'open-light':
+					x = 1; y = 4; break;
+				case 'open-dark':
+					x = 0; y = 4; break;
+			}
 		}
 		var width = this.config.textureTileWidth
 		var height = this.config.textureTileHeight

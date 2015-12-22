@@ -135,10 +135,10 @@ Map.prototype.getReaction = function(event){
 			var dir = tile.variant
 			if(dir == 'east' && this.east){
 				this.world.setMap(this.east)
-				return {x: this.east.width - 1, y: y, 'stamina': -1}
+				return {x: 0, y: y, 'stamina': -1}
 			} else if(dir == 'west' && this.west){
 				this.world.setMap(this.west)
-				return {x: 0, y: y, 'stamina': -1}
+				return {x: this.west.width - 1, y: y, 'stamina': -1}
 			} else if(dir == 'north' && this.north){
 				this.world.setMap(this.north)
 				return {x: x, y: this.north.height - 1, 'stamina': -1}
@@ -147,6 +147,9 @@ Map.prototype.getReaction = function(event){
 				return {x: x, y: 0, 'stamina': -1}
 			}
 		}
+		if(tile.type == 'hutdoor'){
+			console.log('door!')
+		}
 	} else if(event.type == 'rest'){
 		return {x:event.x, y:event.y, 'stamina': 100, 'health': 100}
 	}
@@ -154,9 +157,9 @@ Map.prototype.getReaction = function(event){
 }
 Map.prototype.getTerrain = function(x,y){
 	if(x < 0){
-		return {type: 'edge', variant: 'east'}
-	} else if(x >= this.width){
 		return {type: 'edge', variant: 'west'}
+	} else if(x >= this.width){
+		return {type: 'edge', variant: 'east'}
 	} else if(y < 0){
 		return {type: 'edge', variant: 'north'}
 	} else if(y >= this.height){
@@ -165,6 +168,7 @@ Map.prototype.getTerrain = function(x,y){
 	var type = this.terrain[x] ? this.terrain[x][y] : undefined
 	var seed = Math.random()*100
 	var variant = Math.floor(seed)
+	console.log(type);
 	if(typeof type == 'object'){
 		if(isNaN(type.variant) && typeof type.variant != 'string'){
 			type.variant = variant
