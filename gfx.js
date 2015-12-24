@@ -50,7 +50,6 @@
 			x = 0
 			y = 3
 		} else if(type == 'hut'){
-			console.log(variant)
 			switch(variant){
 				case 'northwest':
 					x = 3; y = 3; break

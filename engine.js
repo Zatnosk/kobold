@@ -168,7 +168,6 @@ Map.prototype.getTerrain = function(x,y){
 	var type = this.terrain[x] ? this.terrain[x][y] : undefined
 	var seed = Math.random()*100
 	var variant = Math.floor(seed)
-	console.log(type);
 	if(typeof type == 'object'){
 		if(isNaN(type.variant) && typeof type.variant != 'string'){
 			type.variant = variant

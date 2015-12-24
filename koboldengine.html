@@ -31,51 +31,6 @@
 	</script>
 	<script src="maps.js"></script>
 	<script type="text/javascript">
-	
-	function distance(ax, ay, bx, by, kx, ky){
-		kx = kx || 1
-		ky = ky || 1
-		var x = Math.abs(ax-bx)/kx
-		var y = Math.abs(ay-by)/ky
-		return Math.sqrt(Math.pow(x,2)+Math.pow(y,2))
-	}
-
-	var npc1 = area1.createNPC(10,10)
-		npc1.conversation.addLine('greeting', 'Greetings traveller!');
-		npc1.conversation.setOpeningLine('greeting');
-		npc1.conversation.setChoice('greeting', 'yes', 'takethis', 'Hello. Who are you?')
-		npc1.conversation.addLine('takethis', 'Who I am is not important. But it is dangerous to go alone! Take... Wait. Where did I put that sword?')
-		npc1.conversation.setChoice('takethis', 'yes', false, 'Eh...')
-
-	var area2_ = function(){
-		map = new Map(25,25)
-		map.terrain = new Array(map.width)
-		for(var x = 0; x < map.width; x++){
-			map.terrain[x] = new Array(map.height)
-			for(var y = 0; y < map.height; y++){
-				if(y > 18 && x == 12){
-					map.terrain[x][y] = {type: 'hill', variant: 'west'}
-				} else if(distance(x,y, 10, 10) > 7.5 && y < 10 || x < 2 || y < 2){
-					map.terrain[x][y] = {type: 'water', variant: undefined}
-				} else if(distance(x,y, 13,14) < 5 || distance(x,y, 17, 24) > 8 && x > 18 && y > 15 ||  x > 13 && y > 8 && y < 15){
-					map.terrain[x][y] = {type: 'tree', variant: undefined}
-				} else {
-					map.terrain[x][y] = {type: 'grass', variant: undefined}
-				}
-			}
-		}
-		return map
-	}()
-
-	//var npc2 = area2.createNPC(20,15)
-	
-
-	area1.north = area2
-	area2.south = area1
-	area2.east = area3
-	area3.west = area2
-
-
 	function getInventory(context){
 		context.inventory = context.inventory || new Inventory()
 		return context.inventory
@@ -105,23 +60,29 @@
 </head>
 <body>
 <aside>
-<div id="charactersheet"></div>
-<div id="inventory"></div>
+	<div class="scroll">
+		<div id="charactersheet"></div>
+		<div id="inventory"></div>
+	</div>
 </aside>
 <div id="content">
-	<canvas id="scene" width="500px" height="500px"></canvas>
-	<div id="overlay" class="hidden"><div id="overlayContent"></div></div>
+	<div class="scroll">
+		<canvas id="scene" width="500px" height="500px"></canvas>
+	</div>
+	<div id="overlay" class="hidden"><div id="overlayContent" class="scroll"></div></div>
 </div>
-<div id="options">
-	Controls:<br>
-	<button id="wasd">WASD FG <input id="wc" type="checkbox" disabled></button><br>
-	<button id="arrows">Arrows ZX <input id="ac" type="checkbox" disabled checked></button><br>
-</div>
+<aside id="options">
+	<div class="scroll">
+		Controls:<br>
+		<button id="wasd">WASD FG <input id="wc" type="checkbox" disabled></button><br>
+		<button id="arrows">Arrows ZX <input id="ac" type="checkbox" disabled checked></button><br>
+	</div>
+</aside>
 <script>
 	var g = new Game({
-		pcX: 1,
-		pcY: 23,
-		map: area3
+		pcX: 7,
+		pcY: 12,
+		map: area1
 	})
 	document.getElementById('inventory').appendChild(g.playerCharacter.getInventory().getDOM().root)
 	var controller = g.controller
@@ -138,6 +99,8 @@
 	var sheet = new CharacterSheet(100, 500)
 	document.getElementById('charactersheet').appendChild(sheet.elem)
 	g.playerCharacter.setSheet(sheet)
+	document.getElementById('wasd').onclick()
 </script>
+
 </body>
 </html>

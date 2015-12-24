@@ -76,7 +76,6 @@ A.prototype.huteast = function(){
 }
 
 
-
 var area1 = new Map(25,25)
 area1.terrain = [
 new A().w(25).end(),
@@ -136,6 +135,7 @@ new A().w(9).g(1).t(5).g(1).t(5).g(4).end(),
 new A().w(9).g(1).t(5).g(1).t(5).g(2).t(2).end()
 ]
 
+
 var area3 = new Map(25, 25)
 area3.terrain = [
 new A().w(9).g(1).t(5).g(1).t(5).g(2).t(2).end(),
@@ -164,3 +164,17 @@ new A().w(10).t(16).end(),
 new A().w(10).t(16).end(),
 new A().w(10).t(16).end()
 ]
+
+area1.north = area2
+area2.south = area1
+area2.east = area3
+area3.west = area2
+
+var npc1 = area1.createNPC(10,10)
+npc1.conversation.addLine('greeting', 'Greetings traveller!');
+npc1.conversation.setOpeningLine('greeting');
+npc1.conversation.setChoice('greeting', 'yes', 'takethis', 'Hello. Who are you?')
+npc1.conversation.addLine('takethis', 'Who I am is not important. But it is dangerous to go alone! Take... Wait. Where did I put that sword?')
+npc1.conversation.setChoice('takethis', 'yes', false, 'Eh...')
+
+var npc2 = area2.createNPC(20,15)
