@@ -87,7 +87,8 @@ World.prototype.setMap = function(map){
 	}
 }
 
-function Map(width, height){
+function Map(width, height, name){
+	this.name = name
 	this.width = width
 	this.height = height
 	this.npcs = []

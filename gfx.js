@@ -95,6 +95,22 @@
 		this.hasChanged = true
 		this.dirty = true
 	}
+	TileMap.prototype.setTerrainTile = function(x, y, tile){
+		var curr = this.terrain.getTerrain(x,y)
+		if(tile.type != curr.type || tile.variant && tile.variant != curr.variant){
+			this.terrain.terrain[x][y] = tile
+			this.hasChanged = true;
+			if(!this.calculateCoords()){
+				var coords = this.getTexCoords(x,y)
+				var len = coords.length
+				var offset = (x*this.config.mapHeight + y) * len
+				coords.unshift(offset, len)
+				Array.prototype.splice.apply(this.textureCoords, coords)
+			}
+		}
+			
+
+	}
 	TileMap.prototype.calculateCoords = function(){
 		if(this.dirty){
 			this.vertexCoords = []
@@ -110,7 +126,9 @@
 				}
 			}
 			this.dirty = false
+			return true
 		}
+		return false
 	}
 	TileMap.prototype.getVertexCoordinates = function(){
 		this.calculateCoords()

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Kobold Engine</title>
+	<link rel="stylesheet" href="kobold.css">
+	<script src="charactersheet.js"></script>
+	<script src="conversation.js"></script>
+	<script src="screen.js"></script>
+	<script src="gfx.js"></script>
+	<script src="engine.js"></script>
+	<script id="shader-vs" type="x-shader/x-vertex">
+	uniform vec2 u_resolution;
+	attribute vec2 a_position;
+	attribute vec2 a_texCoord;
+	varying mediump vec2 v_texCoord;
+
+	void main() {
+		vec2 pos = vec2((a_position.x / u_resolution.x) * 2.0 - 1.0, 
+		                (a_position.y / u_resolution.y) * -2.0 + 1.0);
+		gl_Position = vec4(pos, 0, 1);
+		v_texCoord = a_texCoord;
+	}
+	</script>
+	<script id="shader-fs" type="x-shader/x-fragment">
+	uniform sampler2D u_image;
+	varying mediump vec2 v_texCoord;
+
+	void main() {
+		gl_FragColor = texture2D(u_image, v_texCoord);
+	}
+	</script>
+	<script src="maps.js"></script>
+</head>
+<body>
+<aside>
+	<div class="scroll">
+		<div>Name: <span id="map_name"></span></div>
+		<div class="flexcol section" style="border: 1px solid black">
+			<div>Move:</div>
+			<button id="move_north">North</button>
+			<div>
+				<button id="move_west">West</button>
+				<button id="move_east">East</button>
+			</div>
+			<button id="move_south">South</button>
+		</div>
+		<div class="flexcol section" style="border: 1px solid black">
+			<div>Create:</div>
+			<button id="create_north">North</button>
+			<div>
+				<button id="create_west">West</button>
+				<button id="create_east">East</button>
+			</div>
+			<button id="create_south">South</button>
+		</div>
+	</div>
+</aside>
+<div id="content">
+	<div class="scroll">
+		<canvas id="scene" width="500px" height="500px"></canvas>
+	</div>
+	<div id="overlay" class="hidden"><div id="overlayContent" class="scroll"></div></div>
+</div>
+<aside id="options">
+	<div class="scroll">
+		<div>Type:</div>
+		<div class="flexcol section">
+			<button id="water">Water <input type="checkbox" disabled checked></button>
+			<button id="grass">Grass <input type="checkbox" disabled></button>
+			<button id="tree">Tree <input type="checkbox" disabled></button>
+		</div>
+	</div>
+</aside>
+<script>
+	var tileSize = 20
+	var currentType = 'water'
+	var currentVariant = undefined
+	var currentArea = area1
+
+	var canvas = document.getElementById('scene')
+	var s = gfx([],'texture2.png',canvas)
+	var tilemap = new TileMap()
+	s.addObject(tilemap)
+
+	function selectType(id, type){
+		type = type || id
+		document.getElementById(id).onclick = function(){
+			currentType = type
+			this.parentNode.querySelector('input[checked]').removeAttribute('checked')
+			this.querySelector('input[type="checkbox"]').setAttribute('checked','checked')
+		}
+	}
+	selectType('water')
+	selectType('grass')
+	selectType('tree')
+
+	function directionAvailable(dir, map){
+		if(map && dir){
+			var move = document.getElementById('move_'+dir)
+			if(move){
+				if(map[dir]){
+					move.removeAttribute('disabled')
+					move.onclick = function(){loadMap(map[dir])}
+				} else {
+					move.setAttribute('disabled', 'disabled')
+				}
+			}
+			var create = document.getElementById('create_'+dir)
+			if(create){
+				if(map[dir]){
+					create.setAttribute('disabled', 'disabled')
+				} else{
+					create.removeAttribute('disabled')
+					create.onclick = function(){map[dir] = newMap(dir), directionAvailable(dir, map)}
+				}
+			}
+		}
+	}
+
+	function loadMap(map){
+		currentArea = map
+		tilemap.setTerrain(map)
+		document.getElementById('map_name').textContent = map.name || 'unnamed_map'
+		directionAvailable('north', map)
+		directionAvailable('west', map)
+		directionAvailable('east', map)
+		directionAvailable('south', map)
+	}
+
+	function newMap(dir){
+		console.log(dir)
+		dir = dir=='north'?'south' : dir=='west'?'east' : dir=='east'?'west' : dir=='south'?'north' : null;
+		console.log(dir)
+		var m = new Map(25,25)
+		m.terrain = []
+		for(var i = 0; i < 25; i++){
+			m.terrain[i] = Array(25).fill({'type': currentType, 'variant': currentVariant})
+		}
+		if(dir){
+			m[dir] = currentArea
+		}
+		return m
+	}
+
+	loadMap(area1)
+	
+
+	canvas.addEventListener('click', function(e){
+		var rect = this.getBoundingClientRect()
+		var x = Math.floor((e.clientX - rect.left)/tileSize)
+		var y = Math.floor((e.clientY - rect.top)/tileSize)
+		if(true){
+			tilemap.setTerrainTile(x, y, {'type': currentType, 'variant': currentVariant})
+		} else if(currentArea.terrain[x][y].type != currentType){
+			currentArea.terrain[x][y] = {'type': currentType, 'variant': currentVariant}
+			tilemap.setTerrain(currentArea)
+		}
+	})
+</script>
+
+</body>
+</html>
