@@ -26,7 +26,7 @@ World.prototype.text = function(conversation, callback){
 			var actions = {}
 			for(var key in choices){
 				if(typeof choices[key].id != undefined){
-					actions[key] = function(){pop(); next(resolve, choices[key].id)}
+					actions[key] = (k=>function(){pop(); next(resolve, choices[k].id)})(key)
 				}
 			}
 			var pop = controller.shadowActions(actions)
