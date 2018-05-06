@@ -37,3 +37,7 @@ Conversation.prototype.setChoice = function(id, choice, next, text){
 	}
 	this.choices[id][choice] = {'id': next, 'text': text}
 }
+
+Conversation.prototype.addEvent = function(id, name, args){
+	this.lines[id] = {'type': 'event', 'name': name, 'args': args}
+}

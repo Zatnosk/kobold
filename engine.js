@@ -9,24 +9,38 @@ function World(map, PC, screen){
 }
 
 World.prototype.text = function(conversation, callback){
-	function fillOverlay(id){
-		overlay.textContent = conversation.get(id)
-		var choices = conversation.getChoices(id)
-		for(var key in choices){
-			var keybind = controller.keyMap[key] || ' '
-			overlay.innerHTML += '<br>['+keybind+']: '+choices[key].text
-		}
-	}
+	var world = this
 	function next(resolve, id){
-		fillOverlay(id)
 		if(id === false){
 			end(resolve)
 		} else {
+			var content = conversation.get(id)
+			if(typeof content == 'string'){
+				overlay.textContent = content
+			} else if(typeof content == 'object' && content.type == 'event'){
+				switch(content.name){
+					case 'addItem':
+						if(content.args){
+							world.PC.getInventory().add(content.args)
+							content.args = undefined
+							overlay.textContent = 'You received an item!'
+						} else {
+							overlay.textContent = 'You already received that item.'
+						}
+						break;
+					default:
+						overlay.textContent = '...'
+				}
+			} else {
+				overlay.textContent = '...'
+			}
 			var choices = conversation.getChoices(id)
 			var actions = {}
 			for(var key in choices){
+				var keybind = controller.keyMap[key] || ' '
+				overlay.innerHTML += '<br>['+keybind+']: '+choices[key].text
 				if(typeof choices[key].id != undefined){
-					actions[key] = function(){pop(); next(resolve, choices[key].id)}
+					actions[key] = (k => function(){pop(); next(resolve, choices[k].id)})(key)
 				}
 			}
 			var pop = controller.shadowActions(actions)
@@ -258,7 +272,7 @@ Character.prototype.rest = function(){
 }
 Character.prototype.getInventory = function(size){
 	if(!this.inventory){
-		this.inventory = new Inventory(size)
+		this.inventory = new Inventory(size || 10)
 	}
 	return this.inventory
 }
